@@ -1,0 +1,224 @@
+#!/bin/sh
+#
+
+#START ~ simple webm converter
+
+#426  - 300k
+#512  - 400k
+#570p - 600k
+#640p - 700k
+#720p - 1000k
+#854p - 1100k
+#1024p - 1500k
+#1280p - 2500k
+#1920p - 3500k
+
+#transpose:
+#0 = rotate and flip
+#1 = +90°
+#2 = -90°
+#3 = rotate and flip
+
+PROGNAME="WEBM Converter - 2.0"
+FORMATS=(webm mp4 wmv avi mov mkv)
+DEBUG="0"
+
+ENCODER=`zenity --list --text "Scegli il tipo di encoder:" --radiolist --column "Choice" --column "Type" TRUE "vp8" FALSE "vp9"`
+
+if [[ $ENCODER == "vp8" ]] 
+then
+	VENCODER="-vcodec libvpx"
+	AENCODER="-acodec libvorbis"
+fi
+
+TYPE_CONV=`zenity --list --text "Scegli il tipo di conversione:" --radiolist --column "Choice" --column "Type" TRUE "File" FALSE "Folder" FALSE "Folder-AUTO"`
+
+if [[ $TYPE_CONV == "File" ]]
+then
+	SEL_FILE=`zenity --title="$PROGNAME" --file-selection`
+else
+	SEL_FILE=`zenity --file-selection --directory`
+fi
+
+if [[ $SEL_FILE = "" ]]
+	then
+	zenity --error --text="Errore. Nessuna selezione."	
+	exit 0
+fi
+
+	ROT_SEL=`zenity --list --text "Scegli la rotazione:" --radiolist --column "Choice" --column "Rotation" TRUE "Nothing" FALSE "Right_90" FALSE "Left_90"`
+	
+	if [[ $ROT_SEL != "Nothing" ]]
+	then
+		if [[ $ROT_SEL == "Right_90" ]]
+		then
+			rotation="1"
+		fi
+
+		if [[ $ROT_SEL == "Left_90" ]]
+		then
+			rotation="2"
+		fi
+
+		TRANSPOSE="-vf ""transpose=$rotation"""
+	fi
+
+	THREADS_NUM=`zenity --entry --title "$PROGNAME" --text "Quanti core vuoi usare?"`
+
+	if [[ $THREADS_NUM != "" ]]
+	then
+		THREADS="-threads $THREADS_NUM"
+	else
+		THREADS=""
+	fi
+	
+	if [[ $TYPE_CONV == "File" ]] || [[ $TYPE_CONV == "Folder" ]]
+	then
+
+		BITR_SEL=`zenity --entry --title "$PROGNAME" --text "Digita il bitrate (eg. '1000k')"`
+
+		if [[ $BITR_SEL != "" ]]
+		then
+			BITR="-b:v $BITR_SEL"
+		else
+			BITR=" "
+		fi
+	fi
+
+	SCALE_SEL=`zenity --entry --title "$PROGNAME" --text "Digita la larghezza del filmato (e.g. '848')"`
+
+	if [[ $SCALE_SEL != "" ]]
+	then
+		SCALE_OPT="-vf scale=$SCALE_SEL:-16"
+	else
+		SCALE_OPT=""
+	fi
+
+	if [[ $TYPE_CONV == "File" ]]
+	then
+
+		TIME_SEL=`zenity --list --text "Vuoi convertire solo una parte del video?" --radiolist --column "Choice" --column "Type" FALSE "Si" TRUE "No"`
+
+		if [[ $TIME_SEL == "Si" ]]
+		then
+			START_TIME=`zenity --entry --title "$PROGNAME" --text "Digita il tempo di inizio del video che vuoi tagliare (e.g. '00:01:50')"`
+			END_TIME=`zenity --entry --title "$PROGNAME" --text "Digita la durata del video tagliato (e.g. '00:03:00')"`
+
+			if [[ $START_TIME == "" ]] || [[ $END_TIME == "" ]]
+			then
+				zenity --error --text="Errore. Nessuna selezione."	
+				exit 0
+			fi		
+
+			TIME="-ss $START_TIME -t $END_TIME"
+		else
+			TIME=""
+		fi
+	fi
+
+
+	if [[ $TYPE_CONV == "File" ]]
+	then
+
+		if [[ -e $SEL_FILE.converted.webm ]]
+		then
+			rm -f  $SEL_FILE.converted.webm
+		fi
+
+		ffmpeg -i $SEL_FILE $BITR $SCALE_OPT $TRANSPOSE $THREADS $AENCODER $VENCODER $TIME $SEL_FILE.converted.webm | zenity --progress --title "$PROGNAME - $VERSION" --text="Sto convertendo..." --pulsate --auto-close
+
+	else
+		if [ ! -d "$SEL_FILE/output" ]
+		then
+			mkdir $SEL_FILE/output
+		fi
+
+		for k in "${FORMATS[@]}"
+		do		
+			for i in $SEL_FILE/*.$k
+			do
+			eval $(ffprobe -v error -of flat=s=_ -select_streams v:0 -show_entries stream=height,width $i)
+			if [[ $streams_stream_0_width != "" ]]
+			then	
+				if [[ $TYPE_CONV == "Folder-AUTO" ]]
+				then
+
+						if [[ $SCALE_SEL != "" ]]
+						then						
+							if (("$streams_stream_0_width" <= "$SCALE_SEL"))
+							then
+								SCALE_OPT=" "
+								VIDEO_W=$streams_stream_0_width
+							else
+								SCALE_OPT="-vf scale=$SCALE_SEL:-16"
+								VIDEO_W=$SCALE_SEL
+							fi
+						else
+							SCALE_OPT=" "
+							VIDEO_W=$streams_stream_0_width	
+						fi
+
+							if (("$VIDEO_W" <= "1920")) && (("$VIDEO_W" > "1280"))
+							then
+								BITR="-b:v 3500k"
+							fi
+							if (("$VIDEO_W" <= "1280")) && (("$VIDEO_W" > "1024"))
+							then
+								BITR="-b:v 2500k"
+							fi
+							if (("$VIDEO_W" <= "1024")) && (("$VIDEO_W" > "854"))
+							then
+								BITR="-b:v 1500k"
+							fi
+							if (("$VIDEO_W" <= "854")) && (("$VIDEO_W" > "720"))
+							then
+								BITR="-b:v 1200k"
+							fi
+							if (("$VIDEO_W" <= "720")) && (("$VIDEO_W" > "640"))
+							then
+								BITR="-b:v 1000k"
+							fi
+							if (("$VIDEO_W" <= "640")) && (("$VIDEO_W" > "570"))
+							then
+								BITR="-b:v 700k"
+							fi
+							if (("$VIDEO_W" <= "570")) && (("$VIDEO_W" > "512"))
+							then
+								BITR="-b:v 600k"
+							fi
+							if (("$VIDEO_W" <= "512")) && (("$VIDEO_W" > "426"))
+							then
+								BITR="-b:v 400k"
+							fi
+							if (("$VIDEO_W" <= "426"))
+							then
+								BITR="-b:v 300k"
+							fi
+
+							if [[ $DEBUG = "1" ]]
+							then
+			 					echo "BITR=$BITR"
+								echo "VIDEO_W=$VIDEO_W"
+								echo "streams_stream_0_width=$streams_stream_0_width"
+								echo "SCALE_OPT=$SCALE_OPT"
+								echo "File=$i"
+								read
+							fi
+						
+				fi
+				
+
+				if [[ $DEBUG != "1" ]] 
+				then
+					ffmpeg -i $i $BITR $SCALE_OPT $TRANSPOSE $THREADS $AENCODER $VENCODER $TIME $SEL_FILE/output/`basename "$i" .$k`.webm | zenity --progress --title "$PROGNAME" --text="Sto convertendo..." --pulsate --auto-close
+				else
+					echo "Simulate --> ffmpeg -i $i $BITR $SCALE_OPT $TRANSPOSE $THREADS $AENCODER $VENCODER $TIME $SEL_FILE/output/`basename "$i" .$k`.webm"
+				fi
+		fi
+		done
+	done
+
+	fi
+
+exit 0
+	
