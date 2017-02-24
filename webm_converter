@@ -1,23 +1,25 @@
 #!/bin/sh
 #
 
+# Copyright 2016 Paolo Leoni - http://www.paololeoni.altervista.org
+# Email: <ulixes84@yahoo.it>
+#
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 #START ~ simple webm converter
-
-#426  - 300k
-#512  - 400k
-#570p - 600k
-#640p - 700k
-#720p - 1000k
-#854p - 1100k
-#1024p - 1500k
-#1280p - 2500k
-#1920p - 3500k
-
-#transpose:
-#0 = rotate and flip
-#1 = +90°
-#2 = -90°
-#3 = rotate and flip
 
 PROGNAME="WEBM Converter - 2.0"
 FORMATS=(webm mp4 wmv avi mov mkv)
