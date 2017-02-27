@@ -1,28 +1,16 @@
 #!/bin/sh
 #
 
-# Copyright 2016 Paolo Leoni - http://www.paololeoni.altervista.org
-# Email: <ulixes84@yahoo.it>
-#
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-
 #START ~ simple webm converter
 
+#transpose:
+#0 = rotate and flip
+#1 = +90°
+#2 = -90°
+#3 = rotate and flip
+
 PROGNAME="WEBM Converter - 2.0"
-FORMATS=(webm mp4 wmv avi mov mkv)
+FORMATS=(mp4 wmv avi mov mkv)
 DEBUG="0"
 
 ENCODER=`zenity --list --text "Scegli il tipo di encoder:" --radiolist --column "Choice" --column "Type" TRUE "vp8" FALSE "vp9"`
@@ -174,21 +162,21 @@ fi
 							fi
 							if (("$VIDEO_W" <= "854")) && (("$VIDEO_W" > "720"))
 							then
-								BITR="-b:v 1200k"
+								BITR="-b:v 1300k"
 							fi
 							if (("$VIDEO_W" <= "720")) && (("$VIDEO_W" > "640"))
 							then
 								BITR="-b:v 1000k"
 							fi
-							if (("$VIDEO_W" <= "640")) && (("$VIDEO_W" > "570"))
-							then
-								BITR="-b:v 700k"
-							fi
-							if (("$VIDEO_W" <= "570")) && (("$VIDEO_W" > "512"))
+							if (("$VIDEO_W" <= "640")) && (("$VIDEO_W" > "590"))
 							then
 								BITR="-b:v 600k"
 							fi
-							if (("$VIDEO_W" <= "512")) && (("$VIDEO_W" > "426"))
+							if (("$VIDEO_W" <= "590")) && (("$VIDEO_W" > "490"))
+							then
+								BITR="-b:v 500k"
+							fi
+							if (("$VIDEO_W" <= "490")) && (("$VIDEO_W" > "426"))
 							then
 								BITR="-b:v 400k"
 							fi
