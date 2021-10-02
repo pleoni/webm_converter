@@ -8,7 +8,7 @@
 #1 = +90°
 #2 = -90°
 #3 = rotate and flip
-
+#Modifica sul branch "fix"
 PROGNAME="WEBM Converter - 2.0"
 FORMATS=(mp4 MP4 wmv WMV avi AVI mov MOV mkv MKV ogv OGV)
 DEBUG="0"
